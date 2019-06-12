@@ -9,7 +9,7 @@
   <PropertyGroup Condition=" '$(RuntimeIdentifier)' == '' ">
     <ToolCommandName>csv2dbf</ToolCommandName>
     <PackAsTool>true</PackAsTool>
-    <PackageId>dotnet-cvs2dbf</PackageId>
+    <PackageId>dotnet-csv2dbf</PackageId>
     <Title>csv2dbf</Title>
     <Authors>Jay Tuley</Authors>
     <Owners>jbtule ekonbenefits</Owners>
