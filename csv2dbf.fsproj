@@ -23,7 +23,9 @@
     <PackageReference Include="FSharp.Interop.Compose" Version="2.0.1-alpha36" />
     <PackageReference Include="FSharp.Interop.NullOptAble" Version="0.10.1.116" />
     <PackageReference Include="McMaster.Extensions.CommandLineUtils" Version="2.3.4" />
-    <PackageReference Include="Ude.NetStandard" Version="1.1.0" />
+    <PackageReference Include="UTF.Unknown" Version="2.0.0-rc1" />
+    <PackageReference Include="System.Text.Encoding.CodePages" Version="4.5.1" />
+
   </ItemGroup>
 
 </Project>

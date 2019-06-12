@@ -9,6 +9,7 @@ open FSharp.Interop.NullOptAble
 open FSharp.Interop.NullOptAble.Operators
 open FSharp.Data
 open DotNetDBF
+open UtfUnknown
 
 let processCSV (input:string) (template:string) (outDir:string option) (outEncoding:string option) (outFilename:string option) (inEncoding: string option) =
     let csv = input |> Path.GetFullPath
@@ -19,18 +20,34 @@ let processCSV (input:string) (template:string) (outDir:string option) (outEncod
 
     let getInputEncoding () =
         use fs = File.OpenRead(csv)
-        let cdet = Ude.CharsetDetector()
-        cdet.Feed(fs)
-        cdet.DataEnd()
+        let result = CharsetDetector.DetectFromStream(fs)
         try
-            System.Text.Encoding.GetEncoding(cdet.Charset) |> ignore
-            cdet.Charset
-        with _ -> 
-            "utf-8"
-       
-    let inEnc = inEncoding |?-> Lazy<string> getInputEncoding
+           
+            printfn "Detecting encoding of '%s'. Found '%s'." csv result.Detected.EncodingName
+            if result.Detected.Encoding |> isNull then
+                raise <| Exception("Couldn't load encoding")
+            else
+                result.Detected.Encoding
+        with exn -> 
+            printfn "%s" exn.Message
+            for ei in System.Text.Encoding.GetEncodings() do
+                   let e = ei.GetEncoding();
 
-    let data = CsvFile.Load(csv, hasHeaders=true, encoding = System.Text.Encoding.GetEncoding(inEnc))
+                   Console.Write( "{0,-6} {1,-25} ", ei.CodePage, ei.Name );
+                   Console.Write( "{0,-8} {1,-8} ", e.IsBrowserDisplay, e.IsBrowserSave );
+                   Console.Write( "{0,-8} {1,-8} ", e.IsMailNewsDisplay, e.IsMailNewsSave );
+                   Console.WriteLine( "{0,-8} {1,-8} ", e.IsSingleByte, e.IsReadOnly );
+                
+
+
+            printfn "Failed to detect charset. using 'utf-8'."
+            System.Text.Encoding.UTF8
+       
+    let inEnc = match inEncoding with
+                | Some(x) -> System.Text.Encoding.GetEncoding(x)
+                | None -> getInputEncoding ()
+
+    let data = CsvFile.Load(csv, hasHeaders=true, encoding = inEnc)
 
     let fields = 
         use fileStream = File.OpenRead(dbf)
@@ -74,7 +91,7 @@ let processCSV (input:string) (template:string) (outDir:string option) (outEncod
                         else null
                     record.Add(cell)
             dbfWriter.WriteRecord(record.ToArray())
-
+    printfn "Writing or overwriting '%s'" finalPath;
     File.Copy(tmpPath, finalPath, overwrite=true)
     File.Delete(tmpPath)
 
@@ -86,6 +103,7 @@ let OptionToOption (opt:CommandOption<'T>) =
 
 [<EntryPoint>]
 let main argv =
+    System.Text.Encoding.RegisterProvider(System.Text.CodePagesEncodingProvider.Instance)
     use app = new CommandLineApplication();
     app.HelpOption() |> ignore;
     let reqTemplate = app.Option<string>("-d|--dbf <DBF_TEMPLATE>", "The DBF Template", CommandOptionType.SingleValue).IsRequired()
