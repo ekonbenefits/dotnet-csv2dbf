@@ -12,7 +12,7 @@
     <PackageId>dotnet-csv2dbf</PackageId>
     <Title>csv2dbf</Title>
     <Authors>Jay Tuley</Authors>
-    <Owners>jbtule ekonbenefits</Owners>
+    <Owners>jbtule EkonBenefits</Owners>
     <Company>Ekon Benefits</Company>
     <Description>Tool to convert a csv into a DBF III (clipper/harbour).</Description>
     <PackageOutputPath>./nupkg</PackageOutputPath>
