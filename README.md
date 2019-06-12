@@ -1,4 +1,12 @@
-# dotnet-csv2dbf
+# dotnet-csv2dbf [![NuGet][main-nuget-badge]][main-nuget]
+
+[main-nuget]: https://www.nuget.org/packages/dotnet-csv2dbf/
+[main-nuget-badge]: https://img.shields.io/nuget/v/dotnet-csv2dbf.svg?style=flat-square&label=nuget
+
+```
+dotnet tool install --global dotnet-csv2dbf
+```
+
 Given a dbf prototype, create a new one filled with data from csv
 
 ```
