@@ -2,7 +2,7 @@
 Given a dbf prototype, create a new one filled with data from csv
 
 ```
-Usage: dotnet-csv2dbf [options] <Input>
+Usage: csv2dbf [options] <Input>
 
 Arguments:
   Input                            CSV Files to convert
