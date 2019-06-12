@@ -24,12 +24,20 @@ open FSharp.Data
 open DotNetDBF
 open UtfUnknown
 
-let processCSV (input:string) (template:string) (outDir:string option) (outEncoding:string option) (outFilename:string option) (inEncoding: string option) =
+type ProcessCSVOptions = {
+    Template:string
+    OutDir: string option
+    OutEncoding: string option
+    OutFileName: string option
+    InEncoding: string option
+}
+
+let processCSV (input:string) (otherParams:ProcessCSVOptions) =
     let csv = input |> Path.GetFullPath
-    let dbf = template |> Path.GetFullPath
-    let dir = outDir |?-> lazy (Environment.CurrentDirectory |> Path.GetFullPath)
-    let outEnc = outEncoding |?-> lazy "utf-8"
-    let filename = outFilename |?-> lazy (csv |> Path.getFileName |> Path.changeExtension "dbf")
+    let dbf = otherParams.Template |> Path.GetFullPath
+    let dir = otherParams.OutDir |?-> lazy (Environment.CurrentDirectory |> Path.GetFullPath)
+    let outEnc = otherParams.OutEncoding |?-> lazy "utf-8"
+    let filename = otherParams.OutFileName |?-> lazy (csv |> Path.getFileName |> Path.changeExtension "dbf")
 
     let getInputEncoding () =
         use fs = File.OpenRead(csv)
@@ -53,7 +61,7 @@ let processCSV (input:string) (template:string) (outDir:string option) (outEncod
             printfn "Failed to detect charset. using 'utf-8'."
             System.Text.Encoding.UTF8
        
-    let inEnc = match inEncoding with
+    let inEnc = match otherParams.InEncoding with
                 | Some(x) -> System.Text.Encoding.GetEncoding(x)
                 | None -> getInputEncoding ()
 
@@ -82,9 +90,12 @@ let processCSV (input:string) (template:string) (outDir:string option) (outEncod
                             match f.DataType with
                                 | NativeDbType.Date -> 
                                     seq {
-                                        yield DateTime.TryParseExact(row.[i],"MM/dd/yyyy", null, Globalization.DateTimeStyles.None) |> Option.ofTryTuple
-                                        yield DateTime.TryParseExact(row.[i],"yyyy-MM-dd", null, Globalization.DateTimeStyles.None) |> Option.ofTryTuple
-                                        yield DateTime.TryParse(row.[i]) |> Option.ofTryTuple
+                                        yield DateTime.TryParseExact(row.[i],"MM/dd/yyyy", null, Globalization.DateTimeStyles.None)
+                                            |> Option.ofTryTuple
+                                        yield DateTime.TryParseExact(row.[i],"yyyy-MM-dd", null, Globalization.DateTimeStyles.None)
+                                            |> Option.ofTryTuple
+                                        yield DateTime.TryParse(row.[i])
+                                            |> Option.ofTryTuple
                                     } |> Seq.choose id |> Seq.tryHead |> Option.toNullable |> box
                                 | NativeDbType.Numeric ->
                                     Decimal.TryParse(row.[i]) |> Option.ofTryTuple |> Option.toNullable |> box
@@ -126,7 +137,13 @@ let main argv =
     app.OnExecute(Action(
                     fun ()->
                         for i in input.Values do
-                            processCSV i (reqTemplate.ParsedValue) (optOutDir |> OptionToOption) (optOutputEncoding |> OptionToOption) (optFileName |> OptionToOption) (optInputEncoding |> OptionToOption)
+                            {
+                                Template = reqTemplate.ParsedValue
+                                OutDir =  optOutDir |> OptionToOption
+                                OutEncoding = optOutputEncoding |> OptionToOption
+                                OutFileName = optFileName |> OptionToOption
+                                InEncoding =  optInputEncoding |> OptionToOption
+                            } |> processCSV i
                   ))
 
     app.Execute(argv)
