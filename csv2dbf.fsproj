@@ -3,14 +3,25 @@
   <PropertyGroup>
     <OutputType>Exe</OutputType>
     <TargetFramework>netcoreapp2.1</TargetFramework>
+    <PackageProjectUrl>https://github.com/ekonbenefits/dotnet-csv2dbf</PackageProjectUrl>
+
   </PropertyGroup>
   <PropertyGroup Condition=" '$(RuntimeIdentifier)' == '' ">
     <ToolCommandName>csv2dbf</ToolCommandName>
     <PackAsTool>true</PackAsTool>
     <PackageId>dotnet-cvs2dbf</PackageId>
+    <Title>csv2dbf</Title>
+    <Authors>Jay Tuley</Authors>
+    <Owners>jbtule ekonbenefits</Owners>
+    <Company>Ekon Benefits</Company>
+    <Description>Tool to convert a csv into a DBF III (clipper/harbour).</Description>
     <PackageOutputPath>./nupkg</PackageOutputPath>
     <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
+    <PackageTags>csv dbf clipper harbour tool</PackageTags>
+    <Copyright>Copyright 2019 Ekon Benefits</Copyright>
+    <PackageLicenseExpression>Apache-2.0</PackageLicenseExpression>
     <PackageRequireLicenseAcceptance>false</PackageRequireLicenseAcceptance>
+    <Version>1.0.1</Version>
   </PropertyGroup>
 
   <ItemGroup>
