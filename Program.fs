@@ -37,46 +37,46 @@ let processCSV (input:string) (template:string) (outDir:string option) (outEncod
         use dbfReader = new DBFReader(fileStream)
         dbfReader.Fields
 
+    let tmpPath = [|dir; sprintf "%s.%s" filename "tmp"|] |> Path.Combine
     let finalPath = [|dir; filename|] |> Path.Combine
-    use outStream = File.Create(finalPath)
-    use dbfWriter = new DBFWriter(outStream)
-    dbfWriter.CharEncoding <- System.Text.Encoding.GetEncoding(outEnc)
-    dbfWriter.Fields <- fields
+    do
+        use outStream = File.Create(tmpPath)
+        use dbfWriter = new DBFWriter(outStream)
+        dbfWriter.CharEncoding <- System.Text.Encoding.GetEncoding(outEnc)
+        dbfWriter.Fields <- fields
 
-    let csvColumns  = data.NumberOfColumns;
+        let csvColumns  = data.NumberOfColumns;
 
-    for row in data.Rows do
-        let record = ResizeArray()
-        for (i,f) in Seq.indexed fields do
-                let cell:obj =
-                    if i < csvColumns then
-                        match f.DataType with
-                            | NativeDbType.Date -> 
-                                seq {
-                                    yield DateTime.TryParseExact(row.[i],"MM/dd/yyyy", null, Globalization.DateTimeStyles.None) |> Option.ofTryTuple
-                                    yield DateTime.TryParseExact(row.[i],"yyyy-MM-dd", null, Globalization.DateTimeStyles.None) |> Option.ofTryTuple
-                                    yield DateTime.TryParse(row.[i]) |> Option.ofTryTuple
-                                } |> Seq.choose id |> Seq.tryHead |> Option.toNullable |> box
-                            | NativeDbType.Numeric ->
-                                Decimal.TryParse(row.[i]) |> Option.ofTryTuple |> Option.toNullable |> box
-                            | NativeDbType.Char ->
-                                let c = row.[i]
-                                let clen = min c.Length f.Size
-                                c |> String.Full.substring 0 clen |> box
-                            | NativeDbType.Memo ->
-                                MemoValue(row.[i]) |> box
-                            | NativeDbType.Logical ->
-                                let l = row.[i]
-                                (l.StartsWith("T") || l.StartsWith("Y") || l.StartsWith("1")) |> box
-                            | _ -> raise <| InvalidDataException("Only Support Clipper/DBF III data fields")
-                    else null
-                record.Add(cell)
-        dbfWriter.WriteRecord(record.ToArray())
+        for row in data.Rows do
+            let record = ResizeArray()
+            for (i,f) in Seq.indexed fields do
+                    let cell:obj =
+                        if i < csvColumns then
+                            match f.DataType with
+                                | NativeDbType.Date -> 
+                                    seq {
+                                        yield DateTime.TryParseExact(row.[i],"MM/dd/yyyy", null, Globalization.DateTimeStyles.None) |> Option.ofTryTuple
+                                        yield DateTime.TryParseExact(row.[i],"yyyy-MM-dd", null, Globalization.DateTimeStyles.None) |> Option.ofTryTuple
+                                        yield DateTime.TryParse(row.[i]) |> Option.ofTryTuple
+                                    } |> Seq.choose id |> Seq.tryHead |> Option.toNullable |> box
+                                | NativeDbType.Numeric ->
+                                    Decimal.TryParse(row.[i]) |> Option.ofTryTuple |> Option.toNullable |> box
+                                | NativeDbType.Char ->
+                                    let c = row.[i]
+                                    let clen = min c.Length f.FieldLength
+                                    c |> String.Full.substring 0 clen |> box
+                                | NativeDbType.Memo ->
+                                    MemoValue(row.[i]) |> box
+                                | NativeDbType.Logical ->
+                                    let l = row.[i]
+                                    (l.StartsWith("T") || l.StartsWith("Y") || l.StartsWith("1")) |> box
+                                | _ -> raise <| InvalidDataException("Only Support Clipper/DBF III data fields")
+                        else null
+                    record.Add(cell)
+            dbfWriter.WriteRecord(record.ToArray())
 
-
-    
-
-    ()
+    File.Copy(tmpPath, finalPath, overwrite=true)
+    File.Delete(tmpPath)
 
 let OptionToOption (opt:CommandOption<'T>) =
     if opt.HasValue() then
