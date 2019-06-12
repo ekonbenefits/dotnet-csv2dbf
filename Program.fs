@@ -1,5 +1,4 @@
-﻿// Learn more about F# at http://fsharp.org
-
+﻿
 open System
 open McMaster.Extensions.CommandLineUtils
 open System.IO
@@ -32,13 +31,10 @@ let processCSV (input:string) (template:string) (outDir:string option) (outEncod
             printfn "%s" exn.Message
             for ei in System.Text.Encoding.GetEncodings() do
                    let e = ei.GetEncoding();
-
-                   Console.Write( "{0,-6} {1,-25} ", ei.CodePage, ei.Name );
-                   Console.Write( "{0,-8} {1,-8} ", e.IsBrowserDisplay, e.IsBrowserSave );
-                   Console.Write( "{0,-8} {1,-8} ", e.IsMailNewsDisplay, e.IsMailNewsSave );
-                   Console.WriteLine( "{0,-8} {1,-8} ", e.IsSingleByte, e.IsReadOnly );
-                
-
+                   Console.Write( "{0,-6} {1,-25} ", ei.CodePage, ei.Name )
+                   Console.Write( "{0,-8} {1,-8} ", e.IsBrowserDisplay, e.IsBrowserSave )
+                   Console.Write( "{0,-8} {1,-8} ", e.IsMailNewsDisplay, e.IsMailNewsSave )
+                   Console.WriteLine( "{0,-8} {1,-8} ", e.IsSingleByte, e.IsReadOnly )
 
             printfn "Failed to detect charset. using 'utf-8'."
             System.Text.Encoding.UTF8
@@ -120,6 +116,3 @@ let main argv =
                   ))
 
     app.Execute(argv)
-
-
-

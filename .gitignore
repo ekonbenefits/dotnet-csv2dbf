@@ -350,3 +350,5 @@ MigrationBackup/
 
 *_temp/*
 *.exe
+Properties/launchSettings.json
+*.dbf
